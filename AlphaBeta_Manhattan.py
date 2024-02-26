@@ -6,7 +6,7 @@ def make_best_move_minimax_alpha_beta_manhattan_distance(game):
 
     for move in game.get_possible_moves(game.board, game.computer):
         new_board = game.make_move(game.board, move)
-        score = minimax_alpha_beta_manhattan_distance(game, new_board, False, 0, 4, alpha, beta, set())
+        score = minimax_alpha_beta_manhattan_distance(game, new_board, False, 0, 2, alpha, beta, set())
         if score > best_score:
             best_score = score
             best_move = move
@@ -71,7 +71,7 @@ def evaluate_manhattan_distance(game, board, computer):
         for row in range(game.lado):
             for col in range(game.lado):
                 if board[row][col] == computer:
-                    distance = game.calculate_manhattan_distance(
+                    distance = calculate_manhattan_distance(
                         row, col, flagpos[0], flagpos[1]
                     )
                     menor_distancia = min(menor_distancia, distance)
