@@ -1,8 +1,10 @@
 import tkinter as tk
 import random
 import time
-
-class BoardGameGUI:
+import Minimax
+import AlphaBeta_Pieces
+import AlphaBeta_Manhattan
+class Breakthru:
     def __init__(self, master, lado, player, computer, begin):
         self.master = master
         self.player = player
@@ -15,6 +17,7 @@ class BoardGameGUI:
         self.heuristic_value_piece_count = 0
         self.cinza_count = 12
         self.amarelo_count = 9
+        self.board = None
         self.create_board()
 
     def create_board(self):
@@ -178,215 +181,6 @@ class BoardGameGUI:
                             possible_moves.append(((row,col),(row+1, col+1)))
                             
         return possible_moves
-
-    def make_best_move_minimax(self):
-        best_score = -float("inf")
-        best_move = None
-
-        for move in self.get_possible_moves(self.board, self.computer):
-            new_board = self.make_move(self.board, move)
-            score = self.minimax(new_board, False, 0, 3)
-            if score > best_score:
-                best_score = score
-                best_move = move
-
-        if best_move is not None:
-            (start_row, start_col), (end_row, end_col) = best_move
-            self.move_piece(start_row, start_col, end_row, end_col)
-            
-        return best_move
-    
-    def minimax(self, board, is_maximizing, current_depth, depth):
-        self.minimax_calls += 1
-
-        if self.check_winner(board) is not None or current_depth == depth:
-            return self.get_score(board) - current_depth
-
-        if is_maximizing:
-            best_score = -float("inf")
-            for move in self.get_possible_moves(board, self.computer):
-                new_board = self.make_move(board, move)
-                score = self.minimax(new_board, False, current_depth+1, depth)
-                best_score = max(best_score, score)
-            return best_score
-
-        else:
-            best_score = float("inf")
-            for move in self.get_possible_moves(board, self.player):
-                new_board = self.make_move(board, move)
-                score = self.minimax(new_board, True, current_depth+1, depth)
-                best_score = min(best_score, score)
-            return best_score
-
-
-    def make_best_move_minimax_alpha_beta_missing_piece(self):
-        best_score = -float("inf")
-        best_move = None
-        alpha = -float("inf")
-        beta = float("inf")
-
-        for move in self.get_possible_moves(self.board, self.computer):
-            new_board = self.make_move(self.board, move)
-            score = self.minimax_alpha_beta_missing_piece(new_board, False, 0, 6, alpha, beta, set())
-            if score > best_score:
-                best_score = score
-                best_move = move
-            alpha = max(alpha, best_score)
-            if beta <= alpha:
-                break
-
-        if best_move is not None:
-            (start_row, start_col), (end_row, end_col) = best_move
-            self.move_piece(start_row, start_col, end_row, end_col)
-            
-        return best_move
-    
-    def minimax_alpha_beta_missing_piece(self, board, is_maximizing, current_depth, depth, alpha, beta, visited_states):
-        self.minimax_calls_alpha_beta += 1
-
-        if self.check_winner(board) is not None:
-            return self.get_score(board) - current_depth
-        elif current_depth == depth:
-            return self.evaluate_heuristic_piece_count_missing(board, self.player)
-
-
-        state_key = tuple(map(tuple, board))
-        if state_key in visited_states:
-            return 0
-        
-        visited_states.add(state_key)  
-
-        if is_maximizing:
-            best_score = -float("inf")
-            for move in self.get_possible_moves(board, self.computer):
-                new_board = self.make_move(board, move)
-                score = self.minimax_alpha_beta_missing_piece(new_board, False, current_depth+1, depth, alpha, beta, visited_states)
-                best_score = max(best_score, score)
-                alpha = max(alpha, best_score)
-                if beta <= alpha:
-                    break
-            return best_score
-
-        else:
-            best_score = float("inf")
-            for move in self.get_possible_moves(board, self.player):
-                new_board = self.make_move(board, move)
-                score = self.minimax_alpha_beta_missing_piece(new_board, True, current_depth+1, depth, alpha, beta, visited_states)
-                best_score = min(best_score, score)
-                beta = min(beta, best_score)
-                if beta <= alpha:
-                    break
-            return best_score
-        
-    def evaluate_heuristic_piece_count_missing(self, board, player):
-        player_count = 0
-        for row in range(self.lado):
-            for col in range(self.lado):
-                if player == "Amarelo" and (board[row][col] == player or board[row][col] == "N"):
-                    player_count += 1
-                elif player == "Cinza" and board[row][col] == player:
-                    player_count += 1
-
-        if player == 'Amarelo':  
-            return self.amarelo_count - player_count
-        else:
-            return self.cinza_count - player_count
-        
-    def make_best_move_minimax_alpha_beta_manhattan_distance(self):
-        best_score = -float("inf")
-        best_move = None
-        alpha = -float("inf")
-        beta = float("inf")
-
-        for move in self.get_possible_moves(self.board, self.computer):
-            new_board = self.make_move(self.board, move)
-            score = self.minimax_alpha_beta_manhattan_distance(new_board, False, 0, 6, alpha, beta, set())
-            if score > best_score:
-                best_score = score
-                best_move = move
-            alpha = max(alpha, best_score)
-            if beta <= alpha:
-                break
-
-        if best_move is not None:
-            (start_row, start_col), (end_row, end_col) = best_move
-            self.move_piece(start_row, start_col, end_row, end_col)
-
-    def minimax_alpha_beta_manhattan_distance(self, board, is_maximizing, current_depth, depth, alpha, beta, visited_states):
-        self.minimax_calls_alpha_beta += 1
-
-        if self.check_winner(board) is not None:
-            return self.get_score(board) - current_depth
-        elif current_depth == depth:
-            return self.evaluate_manhattan_distance(board, self.player)
-
-        state_key = tuple(map(tuple, board))
-        if state_key in visited_states:
-            return 0
-        
-        visited_states.add(state_key)  
-
-        if is_maximizing:
-            best_score = -float("inf")
-            for move in self.get_possible_moves(board, self.computer):
-                new_board = self.make_move(board, move)
-                score = self.minimax_alpha_beta_manhattan_distance(new_board, False, current_depth+1, depth, alpha, beta, visited_states)
-                best_score = max(best_score, score)
-                alpha = max(alpha, best_score)
-                if beta <= alpha:
-                    break
-            return best_score
-
-        else:
-            best_score = float("inf")
-            for move in self.get_possible_moves(board, self.player):
-                new_board = self.make_move(board, move)
-                score = self.minimax_alpha_beta_manhattan_distance(new_board, True, current_depth+1, depth, alpha, beta, visited_states)
-                best_score = min(best_score, score)
-                beta = min(beta, best_score)
-                if beta <= alpha:
-                    break
-            return best_score
-
-    def evaluate_manhattan_distance(self, board, computer):
-        flagpos = ()
-        menor_distancia = float("inf")
-        for row in range(self.lado):
-            for col in range(self.lado):
-                if board[row][col] == "N":
-                    flagpos = (row, col)
-                    break
-
-        if computer == "Cinza":
-            for row in range(self.lado):
-                for col in range(self.lado):
-                    if board[row][col] == computer:
-                        distance = self.calculate_manhattan_distance(row, col, flagpos[0], flagpos[1])
-                        if menor_distancia > distance:
-                            menor_distancia = distance
-            return abs(6 - menor_distancia)
-        
-        elif computer == "Amarelo":
-            # andar pelo perimetro do tabuleiro e calcular a distancia de cada ate a bandeira
-            for lado in range(self.lado):
-                distance = self.calculate_manhattan_distance(flagpos[0], flagpos[1], 0, lado)
-                if menor_distancia > distance:
-                    menor_distancia = distance
-                distance = self.calculate_manhattan_distance(flagpos[0], flagpos[1], 6, lado)
-                if menor_distancia > distance:
-                    menor_distancia = distance
-                distance = self.calculate_manhattan_distance(flagpos[0], flagpos[1], lado, 0)
-                if menor_distancia > distance:
-                    menor_distancia = distance
-                distance = self.calculate_manhattan_distance(flagpos[0], flagpos[1], lado, 6)
-                if menor_distancia > distance:
-                    menor_distancia = distance
-            return abs(6 - menor_distancia)
-                
-                    
-                    
-    def calculate_manhattan_distance(self, row, col, flag_row, flag_col):
-        return abs(row - flag_row) + abs(col - flag_col)  
       
     def make_move(self, board, move):
         new_board = [row[:] for row in board] 
@@ -450,7 +244,7 @@ def game_start(choice):
         text = "Computador é o Cinza \nVocê é o Amarelo"
 
     begin = random.choice([player, computer])
-    game = BoardGameGUI(window, lado, player, computer, begin)
+    game = Breakthru(window, lado, player, computer, begin)
     game.disable_buttons()
 
     info_label = tk.Label(window, text=text)
@@ -472,15 +266,15 @@ def game_start(choice):
             window.update()
             
             if choice == "1":
-                best_move = game.make_best_move_minimax()
+                best_move = Minimax.make_best_move_minimax(game)
                 print("Minimax calls:", game.minimax_calls)
                 print("Best move PC:", best_move)
             elif choice == "2":
-                best_move = game.make_best_move_minimax_alpha_beta_missing_piece()
+                best_move = AlphaBeta_Pieces.make_best_move_minimax_alpha_beta_missing_piece(game)
                 print("Minimax calls with Alpha-Beta Pruning: ", game.minimax_calls_alpha_beta)
                 print("Best move PC with Alpha-Beta Pruning: ", best_move)
             elif choice == "3":
-                best_move = game.make_best_move_minimax_alpha_beta_manhattan_distance()
+                best_move = AlphaBeta_Manhattan.make_best_move_minimax_alpha_beta_manhattan_distance(game)
                 print("Minimax calls with Alpha-Beta Pruning: ", game.minimax_calls_alpha_beta)
                 print("Best move PC with Alpha-Beta Pruning: ", best_move)
 
@@ -504,7 +298,7 @@ def main():
     startWindow.title("Breakthru")
 
     choice = tk.StringVar() 
-    choice.set("0")
+    choice.set("")
 
     def update_choice():  
         if choice.get() != "1" and choice.get() != "2" and choice.get() != "3":
@@ -513,7 +307,7 @@ def main():
         startWindow.destroy()
         game_start(choice_value)
 
-    startWindow.geometry("240x170")
+    startWindow.geometry("330x190")
 
 
     heuristic_label = tk.Label(startWindow, font=('Arial', 10, 'bold'), text="Escolha a heurística")
@@ -532,9 +326,6 @@ def main():
     startWindow.eval('tk::PlaceWindow . center')
     startWindow.mainloop()
 
-    
-
-    
 
 if __name__ == "__main__":
     main()
