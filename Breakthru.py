@@ -3,7 +3,9 @@ import random
 import time
 import Minimax
 import AlphaBeta_Pieces
-import AlphaBeta_Manhattan
+import AlphaBeta_Dangerous
+import AlphaBeta_minimax
+import sys
 class Breakthru:
     def __init__(self, master, lado, player, computer, begin):
         self.master = master
@@ -26,7 +28,7 @@ class Breakthru:
         for row in range(self.lado):
             button_row = []
             for col in range(self.lado):
-                button = tk.Button(self.master, width=4, height=2, command=lambda r=row, c=col: self.on_button_click(r, c))
+                button = tk.Button(self.master, width=4, height=2, command=lambda r=row, c=col: self.on_button_click(r, c), text="( " + str(row) + ", " + str(col) + " )")
                 button.grid(row=row, column=col)
                 button_row.append(button)
             self.buttons.append(button_row)
@@ -65,28 +67,8 @@ class Breakthru:
                 return True
             return False
         
-        # Movimento na horizontal
-        if row == new_row:     
-            if col > new_col:
-                for i in range(col-1, new_col, -1):
-                    if self.board[row][i] is not None:
-                        return False
-            else:
-                for i in range(col+1, new_col):
-                    if self.board[row][i] is not None:
-                        return False
-            return True
-                    
-        # Movimento na vertical            
-        elif col == new_col:   
-            if row > new_row:
-                for i in range(row-1, new_row, -1):
-                    if self.board[i][col] is not None:
-                        return False
-            else:
-                for i in range(row+1, new_row):
-                    if self.board[i][col] is not None:
-                        return False
+        # Movimento para cima, baixo, esquerda ou direita
+        if (row == new_row and abs(col - new_col) == 1) or (col == new_col and abs(row - new_row) == 1):
             return True
         
         return False
@@ -101,7 +83,7 @@ class Breakthru:
         elif piece == "Cinza":
             button.config(bg="gray60")
         else:
-            button.config(bg="SystemButtonFace")
+            button.config(bg="gray100")
 
     def move_piece(self, row, col, new_row, new_col):
         if not self.check_move(row, col, new_row, new_col):
@@ -124,60 +106,48 @@ class Breakthru:
             for col in range(self.lado):
                 if (player == "Amarelo" and (board[row][col] == player or board[row][col] == "N")) or (player == "Cinza" and board[row][col] == player):
 
-                    # Gerar movimentos para cima até o fim do tabuleiro
-                    for i in range(row-1, -1, -1):
-                        if board[i][col] == None:
-                            possible_moves.append(((row,col),(i, col)))
-                        else:
-                            break
+                    # Gerar um movimento para cima
+                    if row > 0 and board[row-1][col] == None:
+                        possible_moves.append(((row,col),(row-1, col)))
 
-                    # Gerar movimentos para baixo até o fim do tabuleiro
-                    for i in range(row+1, self.lado):
-                        if board[i][col] == None:
-                            possible_moves.append(((row,col),(i, col)))
-                        else:
-                            break
+                    # Gerar um movimento para baixo
+                    if row < self.lado-1 and board[row+1][col] == None:
+                        possible_moves.append(((row,col),(row+1, col)))
 
-                    # Gerar movimentos para a esquerda até o fim do tabuleiro
-                    for i in range(col-1, -1, -1):
-                        if board[row][i] == None:
-                            possible_moves.append(((row,col),(row, i)))
-                        else:
-                            break
+                    # Gerar um movimento para a esquerda
+                    if col > 0 and board[row][col-1] == None:
+                        possible_moves.append(((row,col),(row, col-1)))
 
-                    # Gerar movimentos para a direita até o fim do tabuleiro
-                    for i in range(col+1, self.lado):
-                        if board[row][i] == None:
-                            possible_moves.append(((row,col),(row, i)))
-                        else:
-                            break
+                    # Gerar um movimento para a direita
+                    if col < self.lado-1 and board[row][col+1] == None:
+                        possible_moves.append(((row,col),(row, col+1)))
 
-                    # Cima esquerda   
+                    # Comer Cima esquerda   
                     if (row > 0 and col > 0) and (board[row-1][col-1] != player):               
-                        if (self.computer == "Amarelo") and (board[row-1][col-1] == "Cinza"):          
+                        if (player == "Amarelo") and (board[row-1][col-1] == "Cinza"):          
                             possible_moves.append(((row,col),(row-1, col-1)))
-                        elif (self.computer == "Cinza") and ((board[row-1][col-1] == "Amarelo") or (board[row-1][col-1] == "N")):
+                        elif (player == "Cinza") and ((board[row-1][col-1] == "Amarelo") or (board[row-1][col-1] == "N")):
                             possible_moves.append(((row,col),(row-1, col-1)))
 
-                    # Cima direita
+                    # Comer Cima direita
                     if (row > 0 and col < self.lado-1) and (board[row-1][col+1] != player):       
-                        if (self.computer == "Amarelo") and (board[row-1][col+1] == "Cinza"):
+                        if (player == "Amarelo") and (board[row-1][col+1] == "Cinza"):
                             possible_moves.append(((row,col),(row-1, col+1)))
-                        elif (self.computer == "Cinza") and ((board[row-1][col+1] == "Amarelo") or (board[row-1][col+1] == "N")):
+                        elif (player == "Cinza") and ((board[row-1][col+1] == "Amarelo") or (board[row-1][col+1] == "N")):
                             possible_moves.append(((row,col),(row-1, col+1)))
                     
-                    # Baixo esquerda
+                    # Comer Baixo esquerda
                     if (row < self.lado-1 and col > 0) and (board[row+1][col-1] != player):
-                        if (self.computer == "Amarelo") and (board[row+1][col-1] == "Cinza"):
+                        if (player == "Amarelo") and (board[row+1][col-1] == "Cinza"):
                             possible_moves.append(((row,col),(row+1, col-1)))
-                        elif (self.computer == "Cinza") and ((board[row+1][col-1] == "Amarelo") or (board[row+1][col-1] == "N")):
+                        elif (player == "Cinza") and ((board[row+1][col-1] == "Amarelo") or (board[row+1][col-1] == "N")):
                             possible_moves.append(((row,col),(row+1, col-1)))
                     
-                    # Baixo direita
+                    # Comer Baixo direita
                     if (row < self.lado-1 and col < self.lado-1) and (board[row+1][col+1] != player):
-                        if (self.computer == "Amarelo") and (board[row+1][col+1] == "Cinza"):
+                        if (player == "Amarelo") and (board[row+1][col+1] == "Cinza"):
                             possible_moves.append(((row,col),(row+1, col+1)))
-                        elif (self.computer == "Cinza") and ((board[row+1][col+1] == "Amarelo") or (board[row+1][col+1] == "N")):
+                        elif (player == "Cinza") and ((board[row+1][col+1] == "Amarelo") or (board[row+1][col+1] == "N")):
                             possible_moves.append(((row,col),(row+1, col+1)))
                             
         return possible_moves
@@ -229,19 +199,23 @@ class Breakthru:
 
 
 def game_start(choice):
+    computer = input("Escolha quem o computador será: 1 - Cinza, 2 - Amarelo: ")
     window = tk.Tk()
     
     window.title("Breakthru")
     lado = 7
     
-    if random.choice([1, 2]) == 1:
+    if computer == "1":
+        player = "Amarelo"
+        computer = "Cinza"
+        text = "Computador é o Cinza \nVocê é o Amarelo"
+    elif computer == "2":
         player = "Cinza"
         computer = "Amarelo"
         text = "Computador é o Amarelo \nVocê é o Cinza"
     else:
-        player = "Amarelo"
-        computer = "Cinza"
-        text = "Computador é o Cinza \nVocê é o Amarelo"
+        print("Escolha inválida")
+        sys.exit()
 
     begin = random.choice([player, computer])
     game = Breakthru(window, lado, player, computer, begin)
@@ -269,14 +243,18 @@ def game_start(choice):
                 best_move = Minimax.make_best_move_minimax(game)
                 print("Minimax calls:", game.minimax_calls)
                 print("Best move PC:", best_move)
-            elif choice == "2":
-                best_move = AlphaBeta_Pieces.make_best_move_minimax_alpha_beta_missing_piece(game)
+            if choice == "2":
+                best_move = AlphaBeta_minimax.make_best_move_minimax_alpha_beta(game)
                 print("Minimax calls with Alpha-Beta Pruning: ", game.minimax_calls_alpha_beta)
                 print("Best move PC with Alpha-Beta Pruning: ", best_move)
             elif choice == "3":
-                best_move = AlphaBeta_Manhattan.make_best_move_minimax_alpha_beta_manhattan_distance(game)
-                print("Minimax calls with Alpha-Beta Pruning: ", game.minimax_calls_alpha_beta)
-                print("Best move PC with Alpha-Beta Pruning: ", best_move)
+                best_move = AlphaBeta_Pieces.make_best_move_minimax_alpha_beta_missing_piece(game)
+                print("Minimax calls with Alpha-Beta Pruning Missing Piece: ", game.minimax_calls_alpha_beta)
+                print("Best move PC with Alpha-Beta Pruning  Missing Piece: ", best_move)
+            elif choice == "4":
+                best_move = AlphaBeta_Dangerous.make_best_move_minimax_alpha_beta_dangerous_zone(game)
+                print("Minimax calls with Alpha-Beta Pruning Dangerous Zone: ", game.minimax_calls_alpha_beta)
+                print("Best move PC with Alpha-Beta Pruning  Dangerous Zone: ", best_move)
 
         window.update()
         winner = game.check_winner(game.board)
@@ -301,7 +279,7 @@ def main():
     choice.set("")
 
     def update_choice():  
-        if choice.get() != "1" and choice.get() != "2" and choice.get() != "3":
+        if choice.get() != "1" and choice.get() != "2" and choice.get() != "3" and choice.get() != "4":
             return
         choice_value = choice.get()
         startWindow.destroy()
@@ -313,7 +291,7 @@ def main():
     heuristic_label = tk.Label(startWindow, font=('Arial', 10, 'bold'), text="Escolha a heurística")
     heuristic_label.grid(padx=10, pady=10,row=8, columnspan=12)
 
-    heuristic_label2 = tk.Label(startWindow, font=('Arial', 10, 'normal'), text="1 - Minimax\n2 - Poda Alpha-Beta: Missing Piece Count Heuristic\n3 - Poda Alpha-Beta: Manhattan Distance Heuristic")
+    heuristic_label2 = tk.Label(startWindow, font=('Arial', 10, 'normal'), text="1 - Minimax\n2 - Poda Alpha-Beta \n3 - Poda Alpha-Beta: Missing Piece Count Heuristic\n4 - Poda Alpha-Beta: Dangerous Zone Heuristic")
     heuristic_label2.grid(padx=10, pady=5,row=9, columnspan=12)
     
     heuristic_entry = tk.Entry(startWindow, textvariable=choice, width=10, justify='center')
