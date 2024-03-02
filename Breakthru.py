@@ -28,7 +28,7 @@ class Breakthru:
         for row in range(self.lado):
             button_row = []
             for col in range(self.lado):
-                button = tk.Button(self.master, width=4, height=2, command=lambda r=row, c=col: self.on_button_click(r, c), text="( " + str(row) + ", " + str(col) + " )")
+                button = tk.Button(self.master, width=4, height=2, command=lambda r=row, c=col: self.on_button_click(r, c))
                 button.grid(row=row, column=col)
                 button_row.append(button)
             self.buttons.append(button_row)
@@ -198,8 +198,7 @@ class Breakthru:
                 self.buttons[row][col].config(state="normal")
 
 
-def game_start(choice):
-    computer = input("Escolha quem o computador será: 1 - Cinza, 2 - Amarelo: ")
+def game_start(choice, computer, begin):
     window = tk.Tk()
     
     window.title("Breakthru")
@@ -213,11 +212,12 @@ def game_start(choice):
         player = "Cinza"
         computer = "Amarelo"
         text = "Computador é o Amarelo \nVocê é o Cinza"
-    else:
-        print("Escolha inválida")
-        sys.exit()
 
-    begin = random.choice([player, computer])
+    if begin == "1":
+        begin = computer
+    elif begin == "2":
+        begin = player
+
     game = Breakthru(window, lado, player, computer, begin)
     game.disable_buttons()
 
@@ -261,9 +261,9 @@ def game_start(choice):
         if winner is not None:
             game.disable_buttons()
             if winner == player:
-                info_label.config(text="Você ganhou!")
+                info_label.config(text="Você ganhou!", font=('Arial', 12, 'bold'))
             else:
-                info_label.config(text="Computador ganhou!")
+                info_label.config(text="Computador ganhou!", font=('Arial', 12, 'bold'))
             window.update()
             time.sleep(2)
             break
@@ -271,38 +271,29 @@ def game_start(choice):
     window.destroy()
 
 def main():
-    startWindow = tk.Tk()
+    print("Bem vindo ao Breakthru!")
+    print("Escolha a heurística que o computador usará para jogar")
+    print("1 - Minimax")
+    print("2 - Poda Alpha-Beta")
+    print("3 - Poda Alpha-Beta: Missing Piece Count Heuristic")
+    print("4 - Poda Alpha-Beta: Dangerous Zone Heuristic")
+
+    choice = input("Escolha a heurística: ")
+    while choice not in ["1", "2", "3", "4"]:
+        print("Escolha inválida")
+        choice = input("Escolha a heurística: ")
+
+    computer = input("Escolha quem o computador será: 1 - Cinza, 2 - Amarelo: ")
+    while computer not in ["1", "2"]:
+        print("Escolha inválida")
+        computer = input("Escolha quem o computador será: 1 - Cinza, 2 - Amarelo: ")
     
-    startWindow.title("Breakthru")
+    begin = input("Escolha começa: 1 - Computador, 2 - Você: ")
+    while begin not in ["1", "2"]:
+        print("Escolha inválida")
+        begin = input("Escolha começa: 1 - Computador, 2 - Você: ")
 
-    choice = tk.StringVar() 
-    choice.set("")
-
-    def update_choice():  
-        if choice.get() != "1" and choice.get() != "2" and choice.get() != "3" and choice.get() != "4":
-            return
-        choice_value = choice.get()
-        startWindow.destroy()
-        game_start(choice_value)
-
-    startWindow.geometry("330x190")
-
-
-    heuristic_label = tk.Label(startWindow, font=('Arial', 10, 'bold'), text="Escolha a heurística")
-    heuristic_label.grid(padx=10, pady=10,row=8, columnspan=12)
-
-    heuristic_label2 = tk.Label(startWindow, font=('Arial', 10, 'normal'), text="1 - Minimax\n2 - Poda Alpha-Beta \n3 - Poda Alpha-Beta: Missing Piece Count Heuristic\n4 - Poda Alpha-Beta: Dangerous Zone Heuristic")
-    heuristic_label2.grid(padx=10, pady=5,row=9, columnspan=12)
-    
-    heuristic_entry = tk.Entry(startWindow, textvariable=choice, width=10, justify='center')
-    heuristic_entry.grid(pady=5,row=11, columnspan=12)
-
-    start_button = tk.Button(startWindow, text="Iniciar jogo", command=update_choice, height=1, width=15, font=('Arial', 10, 'normal'))
-    start_button.grid(pady=10, row=15, columnspan=12)
-    
-    
-    startWindow.eval('tk::PlaceWindow . center')
-    startWindow.mainloop()
+    game_start(choice, computer, begin)
 
 
 if __name__ == "__main__":

@@ -100,8 +100,3 @@ def evaluate_dangerous_zone(game, board, computer):
         return enemies - (total_enemies - enemies)
     else:
         return (total_enemies - enemies) - enemies
-    
-
-
-def calculate_manhattan_distance(row, col, flag_row, flag_col):
-    return abs(row - flag_row) + abs(col - flag_col)
