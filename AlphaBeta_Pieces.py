@@ -1,4 +1,4 @@
-def make_best_move_minimax_alpha_beta_missing_piece(game):
+def make_best_move_minimax_alpha_beta_missing_piece(game, depth):
         best_score = -float("inf")
         best_move = None
         alpha = -float("inf")
@@ -6,7 +6,7 @@ def make_best_move_minimax_alpha_beta_missing_piece(game):
 
         for move in game.get_possible_moves(game.board, game.computer):
             new_board = game.make_move(game.board, move)
-            score = minimax_alpha_beta_missing_piece(game, new_board, False, 0, 6, alpha, beta, set())
+            score = minimax_alpha_beta_missing_piece(game, new_board, False, 0, depth, alpha, beta, set())
             if score > best_score:
                 best_score = score
                 best_move = move

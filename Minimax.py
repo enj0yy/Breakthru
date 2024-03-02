@@ -1,11 +1,11 @@
-def make_best_move_minimax(game):
+def make_best_move_minimax(game, depth):
     best_score = -float("inf")
     best_move = None
 
     moves = game.get_possible_moves(game.board, game.computer)
     for move in moves:
         new_board = game.make_move(game.board, move)
-        score = minimax(game,new_board, True, 0, 4, set())
+        score = minimax(game,new_board, True, 0, depth, set())
         if score > best_score:
             best_score = score
             best_move = move

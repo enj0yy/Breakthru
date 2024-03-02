@@ -198,7 +198,7 @@ class Breakthru:
                 self.buttons[row][col].config(state="normal")
 
 
-def game_start(choice, computer, begin):
+def game_start(choice, computer, begin, depth):
     window = tk.Tk()
     
     window.title("Breakthru")
@@ -240,19 +240,19 @@ def game_start(choice, computer, begin):
             window.update()
             
             if choice == "1":
-                best_move = Minimax.make_best_move_minimax(game)
+                best_move = Minimax.make_best_move_minimax(game, depth)
                 print("Minimax calls:", game.minimax_calls)
                 print("Best move PC:", best_move)
             if choice == "2":
-                best_move = AlphaBeta_minimax.make_best_move_minimax_alpha_beta(game)
+                best_move = AlphaBeta_minimax.make_best_move_minimax_alpha_beta(game, depth)
                 print("Minimax calls with Alpha-Beta Pruning: ", game.minimax_calls_alpha_beta)
                 print("Best move PC with Alpha-Beta Pruning: ", best_move)
             elif choice == "3":
-                best_move = AlphaBeta_Pieces.make_best_move_minimax_alpha_beta_missing_piece(game)
+                best_move = AlphaBeta_Pieces.make_best_move_minimax_alpha_beta_missing_piece(game, depth)
                 print("Minimax calls with Alpha-Beta Pruning Missing Piece: ", game.minimax_calls_alpha_beta)
                 print("Best move PC with Alpha-Beta Pruning  Missing Piece: ", best_move)
             elif choice == "4":
-                best_move = AlphaBeta_Dangerous.make_best_move_minimax_alpha_beta_dangerous_zone(game)
+                best_move = AlphaBeta_Dangerous.make_best_move_minimax_alpha_beta_dangerous_zone(game, depth)
                 print("Minimax calls with Alpha-Beta Pruning Dangerous Zone: ", game.minimax_calls_alpha_beta)
                 print("Best move PC with Alpha-Beta Pruning  Dangerous Zone: ", best_move)
 
@@ -283,6 +283,8 @@ def main():
         print("Escolha inválida")
         choice = input("Escolha a heurística: ")
 
+    depth = int(input("Escolha a profundidade da árvore de busca (0-n): "))
+
     computer = input("Escolha quem o computador será: 1 - Cinza, 2 - Amarelo: ")
     while computer not in ["1", "2"]:
         print("Escolha inválida")
@@ -293,7 +295,7 @@ def main():
         print("Escolha inválida")
         begin = input("Escolha começa: 1 - Computador, 2 - Você: ")
 
-    game_start(choice, computer, begin)
+    game_start(choice, computer, begin, depth)
 
 
 if __name__ == "__main__":
