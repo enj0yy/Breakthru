@@ -28,7 +28,7 @@ class Breakthru:
         for row in range(self.lado):
             button_row = []
             for col in range(self.lado):
-                button = tk.Button(self.master, width=4, height=2, command=lambda r=row, c=col: self.on_button_click(r, c))
+                button = tk.Button(self.master, width=4, height=2, bg="gray100", command=lambda r=row, c=col: self.on_button_click(r, c))
                 button.grid(row=row, column=col)
                 button_row.append(button)
             self.buttons.append(button_row)
