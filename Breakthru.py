@@ -1,11 +1,9 @@
 import tkinter as tk
-import random
 import time
 import Minimax
 import AlphaBeta_Pieces
 import AlphaBeta_Dangerous
 import AlphaBeta_minimax
-import sys
 class Breakthru:
     def __init__(self, master, lado, player, computer, begin):
         self.master = master
