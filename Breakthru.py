@@ -1,9 +1,8 @@
 import tkinter as tk
 import time
 import Minimax
-import AlphaBeta_Pieces
-import AlphaBeta_Dangerous
-import AlphaBeta_minimax
+import AlphaBeta
+import AlphaBeta_Heuristic
 class Breakthru:
     def __init__(self, master, lado, player, computer, begin):
         self.master = master
@@ -12,11 +11,13 @@ class Breakthru:
         self.lado = lado
         self.turn = begin
         self.selected_piece = None
+
         self.minimax_calls = 0
         self.minimax_calls_alpha_beta = 0
-        self.heuristic_value_piece_count = 0
+
         self.cinza_count = 12
         self.amarelo_count = 9
+
         self.board = None
         self.create_board()
 
@@ -242,17 +243,13 @@ def game_start(choice, computer, begin, depth):
                 print("Minimax calls:", game.minimax_calls)
                 print("Best move PC:", best_move)
             if choice == "2":
-                best_move = AlphaBeta_minimax.make_best_move_minimax_alpha_beta(game, depth)
+                best_move = AlphaBeta.make_best_move_minimax_alpha_beta(game, depth)
                 print("Minimax calls with Alpha-Beta Pruning: ", game.minimax_calls_alpha_beta)
                 print("Best move PC with Alpha-Beta Pruning: ", best_move)
             elif choice == "3":
-                best_move = AlphaBeta_Pieces.make_best_move_minimax_alpha_beta_missing_piece(game, depth)
-                print("Minimax calls with Alpha-Beta Pruning Missing Piece: ", game.minimax_calls_alpha_beta)
-                print("Best move PC with Alpha-Beta Pruning  Missing Piece: ", best_move)
-            elif choice == "4":
-                best_move = AlphaBeta_Dangerous.make_best_move_minimax_alpha_beta_dangerous_zone(game, depth)
-                print("Minimax calls with Alpha-Beta Pruning Dangerous Zone: ", game.minimax_calls_alpha_beta)
-                print("Best move PC with Alpha-Beta Pruning  Dangerous Zone: ", best_move)
+                best_move = AlphaBeta_Heuristic.make_best_move_minimax_alpha_beta_heuristic(game, depth)
+                print("Minimax calls with Alpha-Beta Pruning Heuristic: ", game.minimax_calls_alpha_beta)
+                print("Best move PC with Alpha-Beta Pruning  Heuristic: ", best_move)
 
         window.update()
         winner = game.check_winner(game.board)
@@ -270,16 +267,15 @@ def game_start(choice, computer, begin, depth):
 
 def main():
     print("Bem vindo ao Breakthru!")
-    print("Escolha a heurística que o computador usará para jogar")
+    print("Escolha como o computador irá jogar:")
     print("1 - Minimax")
     print("2 - Poda Alpha-Beta")
-    print("3 - Poda Alpha-Beta: Missing Piece Count Heuristic")
-    print("4 - Poda Alpha-Beta: Dangerous Zone Heuristic")
+    print("3 - Poda Alpha-Beta com Heuristicas")
 
-    choice = input("Escolha a heurística: ")
-    while choice not in ["1", "2", "3", "4"]:
+    choice = input("Escolha: ")
+    while choice not in ["1", "2", "3"]:
         print("Escolha inválida")
-        choice = input("Escolha a heurística: ")
+        choice = input("Escolha: ")
 
     depth = int(input("Escolha a profundidade da árvore de busca (0-n): "))
 
@@ -293,6 +289,8 @@ def main():
         print("Escolha inválida")
         begin = input("Escolha começa: 1 - Computador, 2 - Você: ")
 
+    print("Bom jogo :)")
+    print("-----------------------------------------------------------------------")
     game_start(choice, computer, begin, depth)
 
 
