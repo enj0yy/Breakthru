@@ -159,6 +159,22 @@ class Breakthru:
         return new_board
         
     def check_winner(self, board):
+        # Checar se nao existem mais peças cinzas ou amarelas
+        cinza_count = 0
+        amarelo_count = 0
+
+        for row in range(self.lado):
+            for col in range(self.lado):
+                if board[row][col] == "Cinza":
+                    cinza_count += 1
+                if board[row][col] == "Amarelo" or board[row][col] == "N":
+                    amarelo_count += 1
+
+        if cinza_count == 0:
+            return "Amarelo"
+        if amarelo_count == 0:
+            return "Cinza"
+
         # Checar se o Amarelo chegou no perimetro (Navio fugiu)
         for lado in range(self.lado):
             if board[0][lado] == "N":
